@@ -11,28 +11,12 @@
 #include <GLFW/glfw3.h>
 
 GLFWwindow *window;
-GLFWcursor *cursor;
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
 #define M_PI 3.141592653
-#define GLFW_HAND_CURSOR   0x00036004
 
 void drawCircle( GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLint numberOfSides );
-
-void writeData(FILE * out, GLfloat oX, GLfloat oY, GLfloat radius,
-                GLfloat cX, GLfloat cY, double timer,
-                GLfloat distance);
-/* 
- * out      --> output stream
- * oX       --> center of the circle X
- * oY       --> center of the circle Y
- * radius   --> radius of the circle 
- * cX       --> cursor position   
- * cY       --> cursor position      
- * timer    --> current time
- * distance --> distance from cursor to center of the circle 
- */
 
 static void key_callback(GLFWwindow *w, int key, int scancode, int action, int mods);
 
@@ -49,29 +33,15 @@ int main( void )
     // circle position and other attribute 
     GLfloat x = SCREEN_WIDTH / 3;
     GLfloat y = SCREEN_HEIGHT / 2;
-    GLfloat xStep = 5;
+    GLfloat xStep = 10;
     GLfloat radius = 60.0;
     
     // time to wait before  moving the cirle 
     GLfloat sleep = 0.03;
     
-    char text[] = "output.txt";
-    FILE * out = fopen(text, "w");
-    
-    // temporary position of cursor
-    double xpos;
-    double ypos;
-    
-    // current position of cursor 
-    double cX;
-    double cY;
-     
-    GLfloat distance;
-    
     glfwSetErrorCallback(error);
     
-    if ( !glfwInit( ) 
-            || out == NULL)
+    if ( !glfwInit( ) )
     {
         return -1;
     }
@@ -93,10 +63,6 @@ int main( void )
     glOrtho( 0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, 0, 1 ); 
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity( ); 
-    
-    cursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
-    glfwSetCursor( window, cursor ); // set to null to reset cursor 
-    glfwGetCursorPos(window, &cX, &cY);
     
     glfwSetKeyCallback(window, key_callback);
     
@@ -120,22 +86,13 @@ int main( void )
             x += xStep;
         }
 
-        drawCircle( x, y, 0, radius, 36);
-        
-        //update cursor position
-        glfwGetCursorPos(window, &xpos, &ypos);
-        cX = xpos;
-        cY = SCREEN_HEIGHT - ypos;            
-        distance = sqrt((cX - x) * (cX - x) + (cY - y) * (cY - y));    
-        writeData(out, x, y, radius, cX, cY, timer, distance);            
+        drawCircle( x, y, 0, radius, 36);            
 
         glfwSwapBuffers( window );        
         glfwPollEvents( );
     }
  
-    fclose(out);
     glfwDestroyWindow(window);
-    glfwDestroyCursor(cursor);
 
     glfwTerminate( );
     
@@ -151,19 +108,6 @@ static void key_callback(GLFWwindow *w, int key, int scancode,
         int action, int mods){
         if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS)
             glfwSetWindowShouldClose(w, GL_TRUE);
-}
-
-void writeData(FILE * out, GLfloat oX, GLfloat oY, GLfloat radius,
-                GLfloat cX, GLfloat cY, double timer,
-                GLfloat distance){
-    if (distance <= radius) {
-        fprintf(out,"+++%0.3f: Cursor position: xPos:%f yPos:%f \n",
-               timer, cX, cY);
-    } else {
-        fprintf(out,"---%0.3f: Cursor position: xPos:%f yPos:%f \n",
-               timer, cX, cY);
-    }
-    
 }
 
 void drawCircle( GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLint numberOfSides )
